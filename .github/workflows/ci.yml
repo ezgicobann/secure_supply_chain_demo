@@ -1,0 +1,55 @@
+name: Build and Sign Container Image
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  # Imaj ismini belirliyoruz (ghcr.io/kullaniciadi/repoadi)
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  build-and-sign:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Imaj yüklemek için yazma izni lazım
+
+    steps:
+      # 1. Kodları çek
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Cosign aracını kur
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      # 3. Docker Buildx kur (Build işlemleri için)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. GitHub Container Registry'ye (GHCR) giriş yap
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 5. Imajı Build et ve Pushla
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:latest
+          # Her build için benzersiz bir SHA digest çıktısı alıyoruz
+
+      # 6. Imajı İmzala (İşte aradığımız özellik!)
+      - name: Sign image with a key
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}"
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

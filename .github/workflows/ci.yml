@@ -26,7 +26,7 @@ jobs:
         with:
           cosign-release: 'v2.4.0' # Versiyonu en güncel sürüme sabitliyoruz
 
-      # 3. Docker Buildx kur (Build işlemleri için)
+      # 3. Docker Buildx (Build işlemleri için)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -48,7 +48,7 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:latest
           # Her build için benzersiz bir SHA digest çıktısı alıyoruz
 
-      # 6. Imajı İmzala (İşte aradığımız özellik!)
+      # 6. Imajı İmzala
       - name: Sign image with a key
         run: |
           cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}"

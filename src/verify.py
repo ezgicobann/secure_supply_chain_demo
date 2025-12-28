@@ -43,11 +43,8 @@ class ImageVerifier:
         """
         if not verification_output:
             return False
-
-        # Cosign çıktısı JSON formatında satırlar içerebilir, biz basitçe metin kontrolü yapalım
-        # Gerçek bir senaryoda JSON parse edilir.
+       
         if "critical" in verification_output:
-             # Örnek Politika: Kritik güvenlik açığı varsa reddet (Simülasyon)
             logger.warning("Politika Uyarısı: Kritik etiket bulundu.")
             return False
             

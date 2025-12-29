@@ -2,6 +2,7 @@ import logging
 import sys
 from flask import Flask, jsonify
 
+#Demo için tetikleme yorum satırı
 # Logging yapılandırması (Yönerge Md. 4)
 logging.basicConfig(
     level=logging.INFO,
